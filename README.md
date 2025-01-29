@@ -58,7 +58,7 @@ Replace <code>CLIENT_ID</code> and <code>CLIENT_SECRET</code> in the code with y
     To run the FastAPI application, execute the following command:
 </p>
 <pre>
-<code>uvicorn main:app --reload</code>
+<code>uvicorn fatsecret:app --reload</code>
 </pre>
 <p>
     Open your browser and navigate to <a href="http://127.0.0.1:8000">http://127.0.0.1:8000</a> to access the home page.
