@@ -84,10 +84,7 @@ Replace <code>CLIENT_ID</code> and <code>CLIENT_SECRET</code> in the code with y
     <li>Use the pagination links to navigate through multiple pages of results.</li>
 </ol>
 
-<h2>License</h2>
-<p>
-    This project is licensed under the MIT License. See the <code>LICENSE</code> file for details.
-</p>
+
 
 </body>
 </html>
