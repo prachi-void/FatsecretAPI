@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Search</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">FatSecret Food Search</div>
+    </nav>
+
+    <!-- Search Form -->
+    <div class="container">
+        <form action="/" method="get">
+            <input type="text" name="search" placeholder="Search for food..." value="{{ search }}">
+            <button type="submit">Search</button>
+        </form>
+
+        <!-- Display Food Data -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Food Name</th>
+                    <th>Brand</th>
+                    <th>Calories</th>
+                    <th>Protein (g)</th>
+                    <th>Carbs (g)</th>
+                    <th>Fat (g)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for food in foods %}
+                <tr>
+                    <td>{{ food.food_name }}</td>
+                    <td>{{ food.brand_name }}</td>
+                    <td>{{ food.servings.serving.calories }}</td>
+                    <td>{{ food.servings.serving.protein }}</td>
+                    <td>{{ food.servings.serving.carbohydrate }}</td>
+                    <td>{{ food.servings.serving.fat }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            {% if page > 0 %}
+            <a href="/?search={{ search }}&page={{ page - 1 }}">Previous</a>
+            {% endif %}
+            {% if (page + 1) * max_results < total_results %}
+            <a href="/?search={{ search }}&page={{ page + 1 }}">Next</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2023 FatSecret Food Search. All rights reserved.</p>
+    </footer>
+</body>
+</html>
