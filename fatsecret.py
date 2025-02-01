@@ -1,128 +1,92 @@
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.responses import HTMLResponse
-from requests_oauthlib import OAuth2Session
-import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from typing import Optional
 import requests
+import base64
+
+app = FastAPI()
+
+# Mount static files (for CSS, JS, etc.)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Jinja2 templates
+templates = Jinja2Templates(directory="templates")
 
 # FatSecret API credentials
 CLIENT_ID = "eb086db6e0c84c2389ab2be189df77ee"
 CLIENT_SECRET = "802968b455a4461aa61f9783197ac0d4"
 TOKEN_URL = "https://oauth.fatsecret.com/connect/token"
-API_URL = "https://platform.fatsecret.com/rest/server.api"
+API_URL = "https://platform.fatsecret.com/doc/foods/search/v3"
 
+# Function to get OAuth 2.0 access token
 def get_access_token():
-    """Obtain OAuth 2.0 access token from FatSecret API."""
-    data = {
+    auth_header = base64.b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
+    
+    headers = {
+        "Authorization": f"Basic {auth_header}",
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    payload = {
         "grant_type": "client_credentials",
         "scope": "basic",
     }
-    auth = (CLIENT_ID, CLIENT_SECRET)
-    response = requests.post(TOKEN_URL, data=data, auth=auth)
-    if response.status_code == 200:
-        return response.json()["access_token"]
-    else:
-        raise HTTPException(status_code=response.status_code, detail="Failed to obtain access token")
+    
+    response = requests.post(TOKEN_URL, data=payload, headers=headers)
+    
+    if response.status_code != 200:
+        raise HTTPException(status_code=400, detail="Failed to fetch access token")
+    
+    return response.json().get("access_token")
 
-def fetch_food_data(query: str, page: int = 0, max_results: int = 10):
-    """Fetch food data from FatSecret API."""
+# Function to fetch food data from FatSecret API
+def fetch_food_data(search_expression: str, page_number: int = 0, max_results: int = 10):
     access_token = get_access_token()
-    headers = {"Authorization": f"Bearer {access_token}"}
-    params = {
-        "method": "foods.search",
-        "format": "json",
-        "search_expression": query,
-        "page_number": page,
+    
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+    }
+    
+    payload = {
+        "search_expression": search_expression,
+        "page_number": page_number,
         "max_results": max_results,
     }
-    response = requests.get(API_URL, headers=headers, params=params)
-    print(response)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        raise HTTPException(status_code=response.status_code, detail="Failed to fetch food data")
+    
+    response = requests.post(API_URL, headers=headers, json=payload)
+    
+    if response.status_code != 200:
+        raise HTTPException(status_code=400, detail="Failed to fetch food data")
+    
+    return response.json()
 
-app = FastAPI()
-
+# Home route with search functionality
 @app.get("/", response_class=HTMLResponse)
-def home():
-    return """
-    <html>
-    <head>
-        <title>FatSecret Food Search</title>
-        <style>
-            body { font-family: Arial, sans-serif; text-align: center; }
-            .navbar { position: fixed; top: 0; width: 100%; background: #333; color: white; padding: 10px; }
-            .footer { position: fixed; bottom: 0; width: 100%; background: #333; color: white; padding: 10px; }
-            table { width: 80%; margin: 50px auto; border-collapse: collapse; }
-            th, td { padding: 10px; border: 1px solid black; }
-        </style>
-    </head>
-    <body>
-        <div class="navbar">FatSecret Food Search</div>
-        <h1>Search for Food</h1>
-        <form action="/search" method="get">
-            <input type="text" name="query" required>
-            <input type="submit" value="Search">
-        </form>
-        <div class="footer">© 2024 Food Search App</div>
-    </body>
-    </html>
-    """
+async def home(request: Request, search: Optional[str] = None, page: int = 0):
+    max_results = 10  # Results per page
+    if search:
+        data = fetch_food_data(search, page_number=page, max_results=max_results)
+        foods = data.get("foods", {}).get("food", [])
+        total_results = data.get("foods", {}).get("total_results", 0)
+    else:
+        foods = []
+        total_results = 0
 
-@app.get("/search", response_class=HTMLResponse)
-def search_food(query: str, page: int = 0, max_results: int = 10):
-    data = fetch_food_data(query, page, max_results)
-    print(data)  # Debugging output
+    return templates.TemplateResponse(
+        "index.html",
+        {
+            "request": request,
+            "foods": foods,
+            "search": search,
+            "page": page,
+            "total_results": total_results,
+            "max_results": max_results,
+        },
+    )
 
-    foods = data.get("foods", {}).get("food", [])
-    print(foods)
-    html = f"""
-    <html>
-    <head>
-        <title>Search Results</title>
-        <style>
-            body {{ font-family: Arial, sans-serif; text-align: center; }}
-            .navbar {{ position: fixed; top: 0; width: 100%; background: #333; color: white; padding: 10px; }}
-            .footer {{ position: fixed; bottom: 0; width: 100%; background: #333; color: white; padding: 10px; }}
-            table {{ width: 80%; margin: 50px auto; border-collapse: collapse; }}
-            th, td {{ padding: 10px; border: 1px solid black; }}
-        </style>
-    </head>
-    <body>
-        <div class="navbar">FatSecret Food Search</div>
-                <table><h1>Search Results for '{query}'</h1>
-            <tr>
-                <th>Food Name</th>
-                <th>Brand Name</th>
-                <th>Food Type</th>
-                <th>Food URL</th>
-            </tr>
-    """
-
-    for food in foods:
-        html += f"""
-         
-        <tr>
-
-            <td>{food.get("food_name", "N/A")}</td>
-            <td>{food.get("brand_name", "N/A")}</td>
-            <td>{food.get("food_type", "N/A")}</td>
-            <td><a href='{food.get("food_url", "#")}' target='_blank'>View</a></td>
-        </tr>
-        """
-    html += f"""
-        </table>
-        <div class="pagination">
-    """
-    if page > 0:
-        html += f"""<a href="/search?query={query}&page={page-1}&max_results={max_results}">Previous Page</a> """
-    html += f"""
-        </table>
-        <br>
-        <a href="/search?query={query}&page={page+1}&max_results={max_results}">Next Page</a>
-        <div class="footer">© 2024 Food Search App</div>
-    </body>
-    </html>
-    """
-
-    return html
+# Run the application
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
