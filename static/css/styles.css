@@ -1,0 +1,119 @@
+/* General Reset */
+body, html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Navbar */
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #333;
+    color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    text-align: center;
+    padding: 10px 0;
+}
+
+.navbar .title h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.navbar .links {
+    margin-top: 10px;
+}
+
+.navbar .links a {
+    margin: 0 15px;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+.navbar .links a:hover {
+    color: #ff9800;
+}
+
+/* Main Content */
+main {
+    padding: 100px 20px 50px; /* Extra padding to account for the fixed navbar */
+}
+
+/* Footer */
+.footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 50px;
+    font-size: 14px;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.footer p {
+    margin: 5px 0;
+}
+
+.footer p a {
+    color: #ff9800;
+}
+
+.footer p a:hover {
+    text-decoration: underline;
+}
+/* Product Grid Styles */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Three columns */
+    gap: 20px; /* Space between cards */
+    padding: 20px;
+}
+
+.product-card {
+    border: 1px solid #ccc; /* Border around each product card */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px; /* Padding inside each card */
+    text-align: center; /* Center text in the card */
+    background-color: #f9f9f9; /* Light background color */
+    transition: transform 0.2s; /* Animation for hover effect */
+}
+
+.product-card:hover {
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+.product-image {
+    width: 100px; /* Fixed width for images */
+    height: auto; /* Maintain aspect ratio */
+}
+
+/* Pagination Styles */
+.pagination {
+    text-align: center; /* Center pagination links */
+    margin: 20px 0; /* Space above and below pagination */
+}
+
+.pagination a {
+    margin: 0 10px; /* Space between pagination links */
+    text-decoration: none; /* Remove underline */
+    color: #007BFF; /* Link color */
+}
+
+.pagination a:hover {
+    text-decoration: underline; /* Underline on hover */
+}
